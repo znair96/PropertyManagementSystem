@@ -21,7 +21,7 @@ export default class AddPropertyDetailsModal extends Component {
                 <p onClick={closeFunction} style={{cursor:"pointer"}}>X</p>
                 <form className="property-form" onSubmit={(event)=>{
                             event.preventDefault();
-                            console.log(this.state);
+                            // console.log(this.state);
                             this.props.addProperty(name,area,description);
                             this.setState({
                                 name:"",

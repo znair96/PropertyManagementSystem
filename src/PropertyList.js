@@ -37,7 +37,7 @@ export default class PropertyList extends Component {
                    <h1 style={{marginBottom:20}}>{this.props.property.propertyName}</h1>
                    <p>{this.props.property.area} sq.ft</p>
                    <p>{this.props.property.description}</p>
-                   <button style={buttonStyle} onClick={()=> this.props.deleteHandle(this.props.property)}>Delete</button>
+                   <button style={buttonStyle} onClick={()=> this.props.deleteHandle(this.props.propId)}>Delete</button>
                   </div>
                   </div>    
         )

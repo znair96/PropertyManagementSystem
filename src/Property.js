@@ -6,35 +6,59 @@ export default class Property extends Component {
     constructor(){
         super();
         this.state = {
-            propertylist:[{
-                id:"1",
-                propertyName:"DDA Flats",
-                area:800,
-                description:"3BHK flat with good ambience, Park Nearby and swimming pool and have a good placement"
-            },{
-              id:"2",
-              propertyName:"ABC Society",
-              area:950,
-              description:"3BHK flat with good ambience, Park Nearby and swimming pool and have a good placement.fjksfdkhsdjkjhsdfhkfsd"
-            },{
-                id:"3",
-                propertyName:"Sai Baba Society",
-                area:950,
-                description:"3BHK flat with good ambience, Park Nearby and swimming pool and have a good placement.fjksfdkhsdjkjhsdfhkfsd"
-              }]
+            propertylist:[],
+            loading:true
         }
     }
-    onDeleteHandle = (property)=>{
-        let arr = this.state.propertylist;
-        console.log(arr);
-        this.setState({
-            propertylist : arr.filter((prop)=>{
-                return prop.id !== property.id;
+    onDeleteHandle = async(propid)=>{
+        const response = await fetch('https://api.airtable.com/v0/appzW1XQRpdbNNQwO/Table%201/'+propid, {
+            method: 'DELETE',
+            headers: {
+                'Content-type': 'application/json',
+                'Authorization':'Bearer key6054bZRE8O7G63'
+            }
+        });
+        console.log(response);
+        fetch("https://api.airtable.com/v0/appzW1XQRpdbNNQwO/Table%201?api_key=key6054bZRE8O7G63")
+        .then(res=>res.json())
+        .then((result)=>{
+            // console.log(result.records);
+            let modal = document.getElementById("modal");
+            modal.classList.add("not-visible");
+            this.setState({
+                propertylist: result.records,
+                loading:false
             })
-        } 
-        )
+        },
+        (err)=>{
+            console.log(err);
+        })
+
+        // let arr = this.state.propertylist;
+        // console.log(arr);
+        
+        // this.setState({
+        //     propertylist : arr.filter((prop)=>{
+        //         return prop.fields.id !== property.id;
+        //     })
+        // } 
+        // )
     }
-    
+    componentDidMount(){
+        fetch("https://api.airtable.com/v0/appzW1XQRpdbNNQwO/Table%201?api_key=key6054bZRE8O7G63")
+        .then(res=>res.json())
+        .then((result)=>{
+            // console.log(result.records);
+            this.setState({
+                propertylist: result.records,
+                loading:false
+            })
+        },
+        (err)=>{
+            console.log(err);
+        })
+        
+    }
     render() {
         const container = {
             width:"60%",
@@ -60,35 +84,65 @@ export default class Property extends Component {
             let modal = document.getElementById("modal");
             modal.classList.remove("not-visible");
          }
-         const addNewPropertyDetails = (name,area,description)=>{
-              let property = {};
-              property.id = this.state.propertylist.length+1;
-              property.propertyName = name;
-              property.area = area;
-              property.description = description;
-              let arr = this.state.propertylist;
-              arr.push(property);
-              console.log(arr);
-              this.setState({
-                  propertylist: arr
-              });
-              let modal = document.getElementById("modal");
-              modal.classList.add("not-visible");
+         const addNewPropertyDetails = async(name,area,description)=>{
+            //   let property = {};
+            //   property.id = this.state.propertylist.length+1;
+            //   property.propertyName = name;
+            //   property.area = area;
+            //   property.description = description;
+            const requestOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json',
+                'Authorization' : 'Bearer key6054bZRE8O7G63'},
+                body: JSON.stringify({ "records": [
+                    {
+                      "fields": {
+                        "propertyName": name,
+                        "area": Number(area),
+                        "description": description
+                       }
+                    } 
+                ]})
+            };
+            const response = await fetch('https://api.airtable.com/v0/appzW1XQRpdbNNQwO/Table%201', requestOptions);
+            const data = await response.json();
+            alert(data.records[0].fields.propertyName+" added successfully");
+            //   let arr = this.state.propertylist;
+            //   arr.push(property);
+            //   console.log(arr);
+            fetch("https://api.airtable.com/v0/appzW1XQRpdbNNQwO/Table%201?api_key=key6054bZRE8O7G63")
+            .then(res=>res.json())
+            .then((result)=>{
+                // console.log(result.records);
+                let modal = document.getElementById("modal");
+                modal.classList.add("not-visible");
+                this.setState({
+                    propertylist: result.records,
+                    loading:false
+                })
+            },
+            (err)=>{
+                console.log(err);
+            })
+            
          }
         return (
          <>   
+            
             <AddPropertyDetailsModal addProperty={addNewPropertyDetails}/>
             <div style={{position:"relative"}}>
                  <h1 style={{textAlign:"center"}}>Property Management System</h1>
                  <button style={buttonStyle} onClick={addProperty}>Add Property</button> 
             </div>
+            {this.state.loading && <h1 style={{textAlign:"center"}}>Data is loading....</h1>}
             <div style={container}>
                {
                    this.state.propertylist.map((propty)=>{
                        return (<PropertyList 
                        key = {propty.id}
-                       property = {propty}
+                       property = {propty.fields}
                        deleteHandle = {this.onDeleteHandle}
+                       propId = {propty.id}
                        />)
                    })
                }  
